@@ -1,5 +1,5 @@
 target/
-audit/
+/audit/
 *.log
 .idea/
 *.iml
