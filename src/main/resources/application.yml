@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: secureai
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Demo configuration. Keys are configured as SHA-256 digests only:
+#   printf %s 'your-key' | sha256sum
+# Plain keys for local testing: demo-us-key, demo-eu-key, demo-strict-key, demo-admin-key.
+secureai:
+  tenants:
+    support-bot-us:
+      api-key-sha256: a810ac5ea71e99ebd5ef6c09647318665359ac1329a4d4b251f1f5df42b48dd3
+      region: US
+      pii-action: REDACT
+      injection-threshold: 0.5
+    claims-assistant-eu:
+      api-key-sha256: 781b8ab19b6ed42ac22acc41acd0700fd29a8800aba2f8216ed08942d40b57da
+      region: EU
+      pii-action: REDACT
+      injection-threshold: 0.5
+    underwriting-strict:
+      api-key-sha256: 7e9cae84d12d6ffd5a267d5dd3d682d937a13abe12c34bba8d9d4687f57d6347
+      region: US
+      pii-action: BLOCK
+      injection-threshold: 0.3
+    compliance-admin:
+      api-key-sha256: ac5bb3526d3be432ba19fb1fc0712d350c160bd2169cd24401c9fcaeaac2d860
+      region: US
+      admin: true
+  routes:
+    US:
+      base-url: ${SECUREAI_US_BASE_URL:http://localhost:11434}
+      model: ${SECUREAI_US_MODEL:llama3.2}
+      api-key: ${SECUREAI_US_API_KEY:}
+    EU:
+      base-url: ${SECUREAI_EU_BASE_URL:http://localhost:11434}
+      model: ${SECUREAI_EU_MODEL:llama3.2}
+      api-key: ${SECUREAI_EU_API_KEY:}
+  audit:
+    file: ${SECUREAI_AUDIT_FILE:audit/audit.jsonl}
+    elasticsearch-url: ${SECUREAI_ELASTICSEARCH_URL:}
+    elasticsearch-index: secureai-audit
+  upstream:
+    connect-timeout: 2s
+    read-timeout: 60s

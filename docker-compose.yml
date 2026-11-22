@@ -1,0 +1,42 @@
+# Local stack: SecureAI in front of Ollama, audit records indexed into Elasticsearch.
+# Both regions point at the same local Ollama here; in production each region gets its own endpoint.
+services:
+  secureai:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SECUREAI_US_BASE_URL: http://ollama:11434
+      SECUREAI_EU_BASE_URL: http://ollama:11434
+      SECUREAI_US_MODEL: llama3.2
+      SECUREAI_EU_MODEL: llama3.2
+      SECUREAI_ELASTICSEARCH_URL: http://elasticsearch:9200
+      SECUREAI_AUDIT_FILE: /app/audit/audit.jsonl
+    volumes:
+      - audit:/app/audit
+    depends_on:
+      - ollama
+      - elasticsearch
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es:/usr/share/elasticsearch/data
+
+volumes:
+  audit:
+  ollama:
+  es:
